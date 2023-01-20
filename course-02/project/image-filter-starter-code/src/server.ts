@@ -1,6 +1,25 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { Request, Response } from 'express';
+import { NextFunction } from 'connect';
+import { encrypted_password } from './config';
+
+
+
+
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  console.log(req.headers)
+  if (req.headers.authorization === encrypted_password){
+    return next();
+  }
+  else {
+    return res.status(401).send("Unauthorized");
+  }
+
+}
+
 
 (async () => {
 
@@ -29,12 +48,13 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   /**************************************************************************** */
 
-app.get("/filteredimage", async (req,res)=>{
-  let image_url = req.query.image_url.toString();
-  if (!image_url){
-    return res.status(400).send("imageURL  is required as query parameter")
+app.get("/filteredimage",requireAuth, async(req: Request,res: Response)=>{
+  let img_url: string = "";
+  img_url = req.query.image_url.toString();
+  if (!img_url){
+    return res.status(400).send("imageURL is required as query parameter")
   }
-  const fImage = await filterImageFromURL(image_url);
+  const fImage = await filterImageFromURL(img_url);
   res.status(200).sendFile(fImage,()=>{
     deleteLocalFiles([fImage])
 

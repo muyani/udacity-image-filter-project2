@@ -1,0 +1,1 @@
+export const encrypted_password = "Basic Y3JtOmNybSE="
